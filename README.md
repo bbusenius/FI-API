@@ -27,7 +27,7 @@ Visit the site at http://127.0.0.1:5000
 ### Run unit tests
 
 ```
-pytest
+python -m pytest
 ```
 
 ## Run with Docker

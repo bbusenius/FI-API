@@ -36,3 +36,19 @@ docker run -d -p 1337:80 ubuntu-fi-api
 ```
 
 You should now see the site at http://localhost:1337
+
+## Example API Calls (running in Docker)
+
+Get a list of possible endpoints:
+
+http://localhost:1337/json/
+
+Example API call:
+
+http://localhost:1337/json/savings_rate?take_home_pay=6500&spending=1900
+
+Returns:
+
+```
+70.76923076923077
+```

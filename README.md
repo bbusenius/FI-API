@@ -14,6 +14,7 @@ Create a virtual env and install the requirements with:
 
 ```
 pip install -r requirements.txt
+pip install -r requirements_dev.txt
 ```
 
 ### Run the Flask app
@@ -22,6 +23,12 @@ pip install -r requirements.txt
 env FLASK_APP=app.py flask run
 ```
 Visit the site at http://127.0.0.1:5000
+
+### Run unit tests
+
+```
+pytest
+```
 
 ## Run with Docker
 ### Build

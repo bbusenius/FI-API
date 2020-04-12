@@ -3,8 +3,10 @@ from inspect import signature
 import fi
 from diablo_utils import cast_by_type, functs_from_mod
 from flask import Flask, escape, jsonify, render_template, request
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 if __name__ == '__main__':
     app.run()

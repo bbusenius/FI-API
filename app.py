@@ -1,3 +1,4 @@
+import re
 from inspect import signature
 
 import fi
@@ -106,3 +107,25 @@ def api_json_endpoints(fun_name):
         # Success! Call the library function and jsonify the result
         else:
             return jsonify(function_to_call(*fun_args))
+
+
+@app.route('/json/h/<fun_name>')
+def help_json_endpoint(fun_name):
+    """
+    Help endpoint for the JSON API.
+    """
+    fun_name = escape(fun_name)
+    print(fun_name)
+    # Invalid endpoint
+    if fun_name not in FUN_DICT:
+        msg = 'Not a valid endpoint. Only the following endpoints are allowed'
+        return error_msg(400, msg, list(FUN_DICT.keys()))
+    # Help endpoint
+    else:
+        function_to_call = FUN_DICT[fun_name]
+        text = function_to_call.__doc__
+        clean_text = re.sub('\\s+', ' ', text).strip()
+        formatted_text = clean_text.replace('Args: ', '\n\nArgs:\n').replace(
+            'Returns: ', '\n\nReturns:\n'
+        )
+        return jsonify(formatted_text)

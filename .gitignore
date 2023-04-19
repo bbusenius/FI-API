@@ -4,3 +4,5 @@
 /*.egg-info
 /.eggs
 venv/
+app.ini
+wsgi.py

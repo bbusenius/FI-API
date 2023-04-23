@@ -1,4 +1,5 @@
 import re
+from decimal import ROUND_HALF_UP, Decimal
 from inspect import signature
 
 import fi
@@ -106,7 +107,20 @@ def api_json_endpoints(fun_name):
             return error_msg(400, msg, list(fun_params.keys()))
         # Success! Call the library function and jsonify the result
         else:
-            return jsonify(function_to_call(*fun_args))
+            rnd = request.args.get('round')
+            fun = function_to_call(*fun_args)
+            if rnd:
+                try:
+                    places = Decimal(10) ** -Decimal(rnd)
+                    val = Decimal(fun).quantize(places, ROUND_HALF_UP).normalize()
+                    if val % 1 == 0:
+                        val = int(val)
+                    return jsonify(val)
+                except (TypeError):
+                    # Happens with the big bank redeem points function which
+                    # returns a dict and is a little different from the others.
+                    pass
+            return jsonify(fun)
 
 
 @app.route('/json/h/<fun_name>')

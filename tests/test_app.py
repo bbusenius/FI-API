@@ -24,12 +24,12 @@ class Tests(unittest.TestCase):
             response1 = self.client.get(
                 '/json/take_home_pay?gross_pay=5000&employer_match=1000&taxes_and_fees=3000'
             )
-            self.assertEqual(response1.get_json(), 3000)
+            self.assertEqual(response1.get_json(), '3000')
 
             response2 = self.client.get(
                 '/json/take_home_pay?gross_pay=5000&employer_match=600&taxes_and_fees=2000,500,400'
             )
-            self.assertEqual(response2.get_json(), 2700)
+            self.assertEqual(response2.get_json(), '2700')
 
 
 if __name__ == '__main__':

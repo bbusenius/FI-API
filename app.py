@@ -115,12 +115,17 @@ def api_json_endpoints(fun_name):
                     val = Decimal(fun).quantize(places, ROUND_HALF_UP).normalize()
                     if val % 1 == 0:
                         val = int(val)
-                    return jsonify(val)
+                    # jsonify always returns a string for Decimals. Rather than
+                    # convert Decimals to floats, converting all values to strings
+                    # allows us to preserve accuracy and always return the same
+                    # type (instead of sometimes ints, sometimes, floats, and
+                    # sometimes strings).
+                    return jsonify(str(val))
                 except (TypeError):
                     # Happens with the big bank redeem points function which
                     # returns a dict and is a little different from the others.
-                    pass
-            return jsonify(fun)
+                    return jsonify(fun)
+            return jsonify(str(fun))
 
 
 @app.route('/json/h/<fun_name>')

@@ -145,7 +145,9 @@ def help_json_endpoint(fun_name):
         function_to_call = FUN_DICT[fun_name]
         text = function_to_call.__doc__
         clean_text = re.sub('\\s+', ' ', text).strip()
-        formatted_text = clean_text.replace('Args: ', '\n\nArgs:\n').replace(
-            'Returns: ', '\n\nReturns:\n'
+        pattern = r'\b(?!Credit:|https?:|by:|Mustache:|article:)\w+:'
+        cleaner_text = re.sub(pattern, '\n\\g<0>', clean_text)
+        formatted_text = cleaner_text.replace('Args: ', '\nArgs:').replace(
+            'Returns: ', '\nReturns:\n'
         )
         return jsonify(formatted_text)

@@ -63,6 +63,25 @@ def get_mod_func_args(fun_params):
     return (fail, fun_args)
 
 
+def clean_doc(text):
+    """
+    Attempt to format docstrings.
+
+    Args:
+        text: string, docstring.
+
+    Returns:
+        Docstring that's more appropriate for display on a webpage.
+    """
+    clean_text = re.sub('\\s+', ' ', text).strip()
+    pattern = r'\b(?!Credit:|https?:|by:|Mustache:|article:)\w+:'
+    cleaner_text = re.sub(pattern, '\n\\g<0>', clean_text)
+    formatted_text = cleaner_text.replace('Args: ', '\nArgs:').replace(
+        'Returns: ', '\nReturns:\n'
+    )
+    return formatted_text
+
+
 @app.route('/')
 def home():
     """
@@ -129,13 +148,24 @@ def api_json_endpoints(fun_name):
             return jsonify(str(fun))
 
 
+@app.route('/json/h/')
+def all_help_json_endpoint():
+    """
+    Help endpoint for the JSON API.
+    """
+    # Help for all functions
+    retval = {}
+    for fun in FUN_DICT:
+        retval[fun] = clean_doc(FUN_DICT[fun].__doc__)
+    return jsonify(retval)
+
+
 @app.route('/json/h/<fun_name>')
 def help_json_endpoint(fun_name):
     """
     Help endpoint for the JSON API.
     """
     fun_name = escape(fun_name)
-    print(fun_name)
     # Invalid endpoint
     if fun_name not in FUN_DICT:
         msg = 'Not a valid endpoint. Only the following endpoints are allowed'
@@ -144,10 +174,4 @@ def help_json_endpoint(fun_name):
     else:
         function_to_call = FUN_DICT[fun_name]
         text = function_to_call.__doc__
-        clean_text = re.sub('\\s+', ' ', text).strip()
-        pattern = r'\b(?!Credit:|https?:|by:|Mustache:|article:)\w+:'
-        cleaner_text = re.sub(pattern, '\n\\g<0>', clean_text)
-        formatted_text = cleaner_text.replace('Args: ', '\nArgs:').replace(
-            'Returns: ', '\nReturns:\n'
-        )
-        return jsonify(formatted_text)
+        return jsonify(clean_doc(text))

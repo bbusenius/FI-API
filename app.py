@@ -8,6 +8,7 @@ from flask import Flask, escape, jsonify, render_template, request
 from flask_cors import CORS
 
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False  # This might need to change to app.json.sort_keys = False in Flask 2.3 or later
 CORS(app)
 
 if __name__ == '__main__':

@@ -8,7 +8,8 @@ from flask import Flask, escape, jsonify, render_template, request
 from flask_cors import CORS
 
 app = Flask(__name__)
-app.config['JSON_SORT_KEYS'] = False  # This might need to change to app.json.sort_keys = False in Flask 2.3 or later
+# This might need to change to app.json.sort_keys = False in Flask 2.3 or later
+app.config['JSON_SORT_KEYS'] = False
 CORS(app)
 
 if __name__ == '__main__':
@@ -59,7 +60,11 @@ def get_mod_func_args(fun_params):
             fail = True
             break
         expected_type = str(fun_params[key].annotation)
-        arg_to_pass = cast_by_type(request.args.get(arg_name), expected_type)
+        is_literal = expected_type[0:14] == 'typing.Literal'
+        if is_literal:
+            arg_to_pass = str(request.args.get(arg_name))
+        else:
+            arg_to_pass = cast_by_type(request.args.get(arg_name), expected_type)
         fun_args.append(arg_to_pass)
     return (fail, fun_args)
 

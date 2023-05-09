@@ -88,6 +88,26 @@ def clean_doc(text):
     return formatted_text
 
 
+def beautiful(text):
+    """
+    Add HTML formatting to a docstring.
+
+    Args:
+        text: string, docstring.
+
+    Returns:
+        Beautiful docstring.
+    """
+    text = text.replace('Args:', '<h3>Args:</h3>')
+    text = text.replace('Returns:', '<h3>Returns:</h3>')
+    pattern = r'(?<=\n)\w+:'
+    replacement = r'<strong>\g<0></strong>'
+    text = re.sub(pattern, replacement, text)
+    url_regex = re.compile(r'(https?://\S+)')
+    text = url_regex.sub(r'<a href="\1">\1</a>', text)
+    return f'<h3>Usage:</h3>\n{text}'
+
+
 @app.route('/')
 def home():
     """
@@ -159,10 +179,15 @@ def all_help_json_endpoint():
     """
     Help endpoint for the JSON API.
     """
+    is_beautiful = request.args.get('html') == 'true'
+
     # Help for all functions
     retval = {}
     for fun in FUN_DICT:
-        retval[fun] = clean_doc(FUN_DICT[fun].__doc__)
+        text = clean_doc(FUN_DICT[fun].__doc__)
+        if is_beautiful:
+            text = beautiful(text)
+        retval[fun] = text
     return jsonify(retval)
 
 

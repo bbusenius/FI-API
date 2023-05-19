@@ -126,7 +126,10 @@ def json_home():
         fun_params = signature(FUN_DICT[func]).parameters
         api[func] = {'args': {}, 'return_type': ''}
         for key in fun_params:
-            api[func]['args'][key] = str(fun_params[key].annotation)
+            api[func]['args'][key] = (
+                str(fun_params[key].annotation),
+                str(fun_params[key].default),
+            )
         api[func]['return_type'] = str(signature(FUN_DICT[func]).return_annotation)
     return jsonify({'Available API Endpoints': api})
 

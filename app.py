@@ -80,7 +80,7 @@ def clean_doc(text):
         Docstring that's more appropriate for display on a webpage.
     """
     clean_text = re.sub('\\s+', ' ', text).strip()
-    pattern = r'\b(?!Credit:|https?:|by:|Mustache:|article:)\w+:'
+    pattern = r'\b(?!Credit:|https?:|by:|Mustache:|article:|Wealth:|costs:)\w+:'
     cleaner_text = re.sub(pattern, '\n\\g<0>', clean_text)
     formatted_text = cleaner_text.replace('Args: ', '\nArgs:').replace(
         'Returns: ', '\nReturns:\n'

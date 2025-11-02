@@ -1,5 +1,6 @@
-flask
+flask==3.1.2
 flask-cors
 simplejson
+markdown
 git+https://github.com/bbusenius/Diablo-Python.git#egg=diablo_python
 git+https://github.com/bbusenius/FI.git#egg=FI

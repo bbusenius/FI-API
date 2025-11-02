@@ -1,11 +1,12 @@
-import re
 from decimal import ROUND_HALF_UP, Decimal
-from inspect import signature
+from inspect import cleandoc, signature
 
 import fi
+import markdown
 from diablo_utils import cast_by_type, functs_from_mod
-from flask import Flask, escape, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
+from markupsafe import escape
 
 app = Flask(__name__)
 # This might need to change to app.json.sort_keys = False in Flask 2.3 or later
@@ -69,43 +70,19 @@ def get_mod_func_args(fun_params):
     return (fail, fun_args)
 
 
-def clean_doc(text):
-    """
-    Attempt to format docstrings.
-
-    Args:
-        text: string, docstring.
-
-    Returns:
-        Docstring that's more appropriate for display on a webpage.
-    """
-    clean_text = re.sub('\\s+', ' ', text).strip()
-    pattern = r'\b(?!Credit:|https?:|by:|Mustache:|article:|Wealth:|costs:)\w+:'
-    cleaner_text = re.sub(pattern, '\n\\g<0>', clean_text)
-    formatted_text = cleaner_text.replace('Args: ', '\nArgs:').replace(
-        'Returns: ', '\nReturns:\n'
-    )
-    return formatted_text
-
-
 def beautiful(text):
     """
-    Add HTML formatting to a docstring.
+    Convert markdown docstring to HTML.
 
     Args:
-        text: string, docstring.
+        text: string, docstring in markdown format.
 
     Returns:
-        Beautiful docstring.
+        HTML formatted docstring.
     """
-    text = text.replace('Args:', '<h3>Args:</h3>')
-    text = text.replace('Returns:', '<h3>Returns:</h3>')
-    pattern = r'(?<=\n)\w+:'
-    replacement = r'<strong>\g<0></strong>'
-    text = re.sub(pattern, replacement, text)
-    url_regex = re.compile(r'(https?://\S+)')
-    text = url_regex.sub(r'<a href="\1">\1</a>', text)
-    return f'<h3>Usage:</h3>\n{text}'
+    if not text:
+        return ""
+    return markdown.markdown(cleandoc(text))
 
 
 @app.route('/')
@@ -170,7 +147,7 @@ def api_json_endpoints(fun_name):
                     # type (instead of sometimes ints, sometimes, floats, and
                     # sometimes strings).
                     return jsonify(str(val))
-                except (TypeError):
+                except TypeError:
                     # Happens with the big bank redeem points function which
                     # returns a dict and is a little different from the others.
                     return jsonify(fun)
@@ -187,7 +164,7 @@ def all_help_json_endpoint():
     # Help for all functions
     retval = {}
     for fun in FUN_DICT:
-        text = clean_doc(FUN_DICT[fun].__doc__)
+        text = cleandoc(FUN_DICT[fun].__doc__)
         if is_beautiful:
             text = beautiful(text)
         retval[fun] = text
@@ -208,4 +185,4 @@ def help_json_endpoint(fun_name):
     else:
         function_to_call = FUN_DICT[fun_name]
         text = function_to_call.__doc__
-        return jsonify(clean_doc(text))
+        return jsonify(cleandoc(text))

@@ -1,6 +1,6 @@
 import unittest
 
-from app import app
+from app import app, beautiful
 
 
 class Tests(unittest.TestCase):
@@ -30,6 +30,32 @@ class Tests(unittest.TestCase):
                 '/json/take_home_pay?gross_pay=5000&employer_match=600&taxes_and_fees=2000,500,400'
             )
             self.assertEqual(response2.get_json(), '2700')
+
+    def testBeautifulHandlesIndentation(self):
+        """Test beautiful() properly cleans indented docstrings to prevent code block formatting."""
+        # Simulating a typical indented function docstring
+        indented_docstring = """
+        Calculate the future value of an investment.
+
+        Args:
+            rate: Interest rate per period
+            nper: Number of periods
+
+        Returns:
+            Future value as a float
+        """
+
+        result = beautiful(indented_docstring)
+
+        # The key test: indented text should NOT be interpreted as code blocks
+        # Markdown treats 4+ spaces of indentation as code blocks
+        self.assertNotIn("<code>", result)
+        self.assertNotIn("<pre>", result)
+
+    def testBeautifulEmptyInput(self):
+        """Test beautiful() handles empty input correctly."""
+        self.assertEqual(beautiful(None), "")
+        self.assertEqual(beautiful(""), "")
 
 
 if __name__ == '__main__':

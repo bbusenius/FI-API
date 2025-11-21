@@ -47,27 +47,40 @@ def get_mod_func_args(fun_params):
         fun_params: parameters from an inspect.signature.
 
     Returns:
-        A tuple where the first item is a boolean and the second item is a
-        list of mixed data types to pass to a function. The boolean will be
-        set to True if an expected argument is missing. This is considered
-        a fail.
+        A tuple where the first item is a boolean, the second item is a
+        list of mixed data types to pass to a function, and the third item
+        is an optional error dict. The boolean will be set to True if an
+        expected argument is missing or type casting fails.
     """
     fun_args = []
     fail = False
+    error_info = None
+
     for key in fun_params.keys():
         arg_name = fun_params[key].name
         arg_passed = request.args.get(arg_name)
         if arg_passed is None:
             fail = True
+            error_info = {'type': 'missing', 'params': list(fun_params.keys())}
             break
         expected_type = str(fun_params[key].annotation)
         is_literal = expected_type[0:14] == 'typing.Literal'
         if is_literal:
             arg_to_pass = str(request.args.get(arg_name))
         else:
-            arg_to_pass = cast_by_type(request.args.get(arg_name), expected_type)
+            try:
+                arg_to_pass = cast_by_type(request.args.get(arg_name), expected_type)
+            except ValueError:
+                fail = True
+                error_info = {
+                    'type': 'invalid_type',
+                    'arg': arg_name,
+                    'expected': expected_type,
+                    'received': arg_passed,
+                }
+                break
         fun_args.append(arg_to_pass)
-    return (fail, fun_args)
+    return (fail, fun_args, error_info)
 
 
 def beautiful(text):
@@ -126,11 +139,15 @@ def api_json_endpoints(fun_name):
         # Function from the FI library
         function_to_call = FUN_DICT[fun_name]
         fun_params = signature(function_to_call).parameters
-        fail, fun_args = get_mod_func_args(fun_params)
-        # Fail - missing GET params
+        fail, fun_args, error_info = get_mod_func_args(fun_params)
+        # Fail - handle different error types
         if fail:
-            msg = 'You did not pass all of the required GET parameters. The following are required'
-            return error_msg(400, msg, list(fun_params.keys()))
+            if error_info and error_info['type'] == 'invalid_type':
+                msg = f"Invalid value for parameter '{error_info['arg']}'. Expected {error_info['expected']}, but received '{error_info['received']}'"
+                return error_msg(400, msg, [])
+            else:
+                msg = 'You did not pass all of the required GET parameters. The following are required'
+                return error_msg(400, msg, list(fun_params.keys()))
         # Success! Call the library function and jsonify the result
         else:
             rnd = request.args.get('round')
